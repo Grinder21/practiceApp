@@ -1,10 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type User = {
   id: number;
   firstName: string;
   lastName: string;
 };
+
+function highlight(fullName: string, query: string) {
+  if (!query) {
+    return <>{fullName}</>;
+  }
+
+  const lowerFull = fullName.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+
+  const index = lowerFull.indexOf(lowerQuery);
+
+  if (index === -1) {
+    return <>{fullName}</>;
+  }
+
+  const before = fullName.slice(0, index);
+  const match = fullName.slice(index, index + query.length);
+  const after = fullName.slice(index + query.length);
+
+  return (
+    <>
+      {before}
+      <mark>{match}</mark>
+      {after}
+    </>
+  );
+}
 
 function App() {
   const [query, setQuery] = useState("");
@@ -28,6 +55,14 @@ function App() {
     })();
   }, []);
 
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((u) =>
+      `${u.firstName} ${u.lastName}`.toLowerCase().includes(q)
+    );
+  }, [users, query]);
+
   return (
     <>
       <div>My project</div>
@@ -37,9 +72,9 @@ function App() {
         placeholder="Search..."
       />
       <ul>
-        {users.map((user) => (
+        {filtered.map((user) => (
           <li key={user.id} style={{ listStyle: "none" }}>
-            {user.firstName} {user.lastName}
+            {highlight(`${user.firstName} ${user.lastName}`, query)}
           </li>
         ))}
       </ul>
