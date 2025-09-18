@@ -37,6 +37,7 @@ function App() {
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [activeIds, setActiveIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     (async () => {
@@ -63,6 +64,10 @@ function App() {
     );
   }, [users, query]);
 
+  const setActive = (id: number) => {
+    setActiveIds((prev) => new Set(prev).add(id));
+  };
+
   return (
     <>
       <div>My project</div>
@@ -71,12 +76,19 @@ function App() {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search..."
       />
-      <ul>
-        {filtered.map((user) => (
-          <li key={user.id} style={{ listStyle: "none" }}>
-            {highlight(`${user.firstName} ${user.lastName}`, query)}
-          </li>
-        ))}
+      <ul style={{ listStyle: "none" }}>
+        {filtered.map((u) => {
+          const isActive = activeIds.has(u.id);
+          return (
+            <li key={u.id}>
+              {isActive ? "🟢" : null}
+              {highlight(`${u.firstName} ${u.lastName}`, query)}{" "}
+              {!isActive && (
+                <button onClick={() => setActive(u.id)}>set active</button>
+              )}
+            </li>
+          );
+        })}
       </ul>
       <p>{error}</p>
     </>
